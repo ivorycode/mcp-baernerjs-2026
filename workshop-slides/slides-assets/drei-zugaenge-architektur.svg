@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1570" viewBox="0 0 1900 1570" role="img" aria-labelledby="title desc">
+  <title id="title">Aufrufwege der drei Zugänge: Chat, MCP und WebMCP treffen sich in derselben Shop-Logik</title>
+  <desc id="desc">Eine rote Linie trennt Client und Server. Oben auf der Client-Seite stehen zwei Gruppen. Im Browser-Tab des Webshops: der Mensch ruft die React-Oberfläche auf, der Agent im Browser ruft über die Browser-API document.modelContext die WebMCP-Tool-Handler auf, die im Client deklariert und registriert sind (features/webmcp/webmcp-tools.ts), dazu das Chat-Widget. Im KI-Host: der externe Agent und MCP Apps, die über callServerTool gehen; beide nutzen den MCP-Client des Hosts. Über die rote Linie gehen nur HTTP-Aufrufe: React-Oberfläche und WebMCP-Tool-Handler rufen die Web-API unter /api auf, useChat ruft /api/chat auf, der MCP-Client ruft den MCP-Endpunkt /mcp über Streamable HTTP auf. Der Chat-Pfad ist vom AI SDK abstrahiert und violett umrahmt: das Chat-Widget nutzt im Client den Hook useChat aus @ai-sdk/react, der POST /api/chat aufruft; auf der Server-Seite übergibt /api/chat an das AI SDK (streamText, tool), das mit einem Sprachmodell beim Anbieter im Wechsel steht und die Tools über execute ausführt. Das AI SDK und der MCP-Endpunkt rufen beide dieselbe Tool-Handler-Schicht auf. Web-API und Tool-Handler münden beide im selben Shop-Modul, das einen Katalogdienst abfragt und Warenkörbe sowie Bestellungen im Prozessspeicher hält. Gelb hervorgehobene Boxen sind die drei Stellen, an denen ein Sprachmodell entscheidet, welches Tool mit welchen Argumenten aufgerufen wird: der Browser-Agent, der externe Agent und das Sprachmodell hinter dem Chat.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-llm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#c47c36"/>
+    </marker>
+    <style>
+      text { font-family: Inter, Arial, Helvetica, sans-serif; fill: #172033; }
+      .title { font-size: 28px; font-weight: 700; }
+      .node { font-size: 20px; font-weight: 600; }
+      .node-sub { font-size: 16px; fill: #475569; }
+      .node-code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 17px; fill: #172033; }
+      .label { font-size: 19px; fill: #475569; }
+      .group-label { font-size: 18px; fill: #475569; }
+      .edge-label { font-size: 16px; fill: #475569; }
+      .zone-label { font-size: 20px; font-weight: 700; fill: #dc2626; }
+      .line { fill: none; stroke: #475569; stroke-width: 2.5; marker-end: url(#arrow); }
+      .line-llm { fill: none; stroke: #c47c36; stroke-width: 2.5; marker-end: url(#arrow-llm); marker-start: url(#arrow-llm); }
+      .boundary-line { stroke: #dc2626; stroke-width: 4; }
+      .group { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 10 8; }
+      .actor-node { fill: #f8fafc; stroke: #64748b; stroke-width: 2; }
+      .llm-node { fill: #fff4d6; stroke: #c47c36; stroke-width: 2.5; }
+      .adapter-node { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; }
+      .logic-node { fill: #f0fdfa; stroke: #0f766e; stroke-width: 2; }
+      .data-node { fill: #ecfdf5; stroke: #059669; stroke-width: 2; }
+      .sdk-group { fill: none; stroke: #7c3aed; stroke-width: 2.5; stroke-dasharray: 8 6; }
+      .sdk-label { font-size: 17px; font-weight: 700; fill: #7c3aed; }
+      .legend { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect width="1900" height="1570" fill="#fff"/>
+  <text x="950" y="44" text-anchor="middle" class="title">Die drei Zugänge im Vergleich: ein Vertrag, drei Adapter</text>
+  <text x="950" y="74" text-anchor="middle" class="label">Alle Aufrufwege münden im selben Shop-Modul mit demselben Zustand</text>
+
+  <!-- ============ CLIENT ============ -->
+
+  <!-- Gruppe: Browser-Tab -->
+  <rect x="40" y="100" width="1008" height="470" rx="18" class="group"/>
+  <text x="60" y="128" class="group-label">Browser-Tab des Webshops</text>
+
+  <!-- Gruppe: KI-Host -->
+  <rect x="1060" y="100" width="640" height="320" rx="18" class="group"/>
+  <text x="1080" y="128" class="group-label">KI-Host (z. B. Claude Desktop)</text>
+
+  <!-- Reihe A: Einstiege -->
+  <rect x="60" y="150" width="300" height="90" rx="14" class="actor-node"/>
+  <text x="210" y="202" text-anchor="middle" class="node">Mensch im Webshop</text>
+
+  <rect x="390" y="150" width="300" height="90" rx="14" class="llm-node"/>
+  <text x="540" y="190" text-anchor="middle" class="node">Agent im Browser</text>
+  <text x="540" y="216" text-anchor="middle" class="node-sub">(WebMCP)</text>
+
+  <rect x="720" y="150" width="300" height="90" rx="14" class="actor-node"/>
+  <text x="870" y="190" text-anchor="middle" class="node">Chat-Widget</text>
+  <text x="870" y="216" text-anchor="middle" class="node-sub">(features/chat/ui)</text>
+
+  <rect x="1080" y="150" width="270" height="90" rx="14" class="llm-node"/>
+  <text x="1215" y="190" text-anchor="middle" class="node">Externer Agent</text>
+  <text x="1215" y="216" text-anchor="middle" class="node-sub">(LLM im Host)</text>
+
+  <rect x="1380" y="150" width="300" height="90" rx="14" class="actor-node"/>
+  <text x="1530" y="190" text-anchor="middle" class="node">MCP Apps im Host</text>
+  <text x="1530" y="216" text-anchor="middle" class="node-sub">(features/mcp-apps)</text>
+
+  <!-- Reihe B: Client-Code -->
+  <rect x="60" y="300" width="300" height="90" rx="14" class="adapter-node"/>
+  <text x="210" y="340" text-anchor="middle" class="node">React-Oberfläche</text>
+  <text x="210" y="366" text-anchor="middle" class="node-sub">(routes/, components/)</text>
+
+  <rect x="390" y="300" width="300" height="90" rx="14" class="adapter-node"/>
+  <text x="540" y="340" text-anchor="middle" class="node-code">document.modelContext</text>
+  <text x="540" y="366" text-anchor="middle" class="node-sub">(Browser-API)</text>
+
+  <rect x="390" y="450" width="300" height="100" rx="14" class="logic-node"/>
+  <text x="540" y="484" text-anchor="middle" class="node">WebMCP-Tool-Handler</text>
+  <text x="540" y="510" text-anchor="middle" class="node-sub">(features/webmcp/webmcp-tools.ts)</text>
+  <text x="540" y="534" text-anchor="middle" class="node-sub">im Client deklariert und registriert</text>
+
+  <rect x="720" y="300" width="300" height="90" rx="14" class="adapter-node"/>
+  <text x="870" y="340" text-anchor="middle" class="node-code">useChat()</text>
+  <text x="870" y="366" text-anchor="middle" class="node-sub">(@ai-sdk/react)</text>
+
+  <rect x="1080" y="300" width="600" height="90" rx="14" class="adapter-node"/>
+  <text x="1380" y="352" text-anchor="middle" class="node">MCP-Client des Hosts</text>
+
+  <!-- Pfeile innerhalb des Clients -->
+  <path d="M 210 240 V 300" class="line"/>
+  <path d="M 540 240 V 300" class="line"/>
+  <path d="M 540 390 V 450" class="line"/>
+  <text x="552" y="426" class="edge-label">execute()</text>
+  <path d="M 1215 240 V 300" class="line"/>
+  <path d="M 1530 240 V 300" class="line"/>
+  <text x="1542" y="276" class="edge-label">callServerTool</text>
+
+  <!-- ============ CLIENT-SERVER-GRENZE ============ -->
+  <line x1="20" y1="620" x2="1880" y2="620" class="boundary-line"/>
+  <text x="1880" y="608" text-anchor="end" class="zone-label">▲ Client</text>
+  <text x="1880" y="646" text-anchor="end" class="zone-label">▼ Server</text>
+
+  <!-- Pfeile über die Grenze: alles HTTP -->
+  <path d="M 210 390 V 690" class="line"/>
+  <text x="222" y="590" class="edge-label">fetch /api/*</text>
+  <path d="M 540 550 V 690" class="line"/>
+  <text x="552" y="590" class="edge-label">fetch /api/*</text>
+  <path d="M 870 240 V 300" class="line"/>
+  <path d="M 870 390 V 690" class="line"/>
+  <text x="882" y="590" class="edge-label">POST /api/chat</text>
+  <path d="M 1380 390 V 690" class="line"/>
+  <text x="1392" y="590" class="edge-label">Streamable HTTP</text>
+
+  <!-- ============ SERVER ============ -->
+
+  <!-- Reihe C: Endpunkte -->
+  <rect x="60" y="690" width="630" height="90" rx="14" class="logic-node"/>
+  <text x="375" y="742" text-anchor="middle" class="node-code">Web-API /api/*</text>
+
+  <rect x="720" y="690" width="300" height="90" rx="14" class="adapter-node"/>
+  <text x="870" y="730" text-anchor="middle" class="node-code">/api/chat</text>
+  <text x="870" y="756" text-anchor="middle" class="node-sub">(chat-route.server.ts)</text>
+
+  <rect x="1080" y="690" width="600" height="90" rx="14" class="adapter-node"/>
+  <text x="1380" y="730" text-anchor="middle" class="node-code">MCP-Endpunkt /mcp</text>
+  <text x="1380" y="756" text-anchor="middle" class="node-sub">(features/mcp)</text>
+
+  <!-- Reihe D: Modell und AI-SDK -->
+  <rect x="370" y="850" width="290" height="90" rx="14" class="llm-node"/>
+  <text x="515" y="890" text-anchor="middle" class="node">Sprachmodell</text>
+  <text x="515" y="916" text-anchor="middle" class="node-sub">extern beim Anbieter</text>
+
+  <rect x="720" y="850" width="300" height="90" rx="14" class="logic-node"/>
+  <text x="870" y="890" text-anchor="middle" class="node">AI SDK</text>
+  <text x="870" y="916" text-anchor="middle" class="node-sub">streamText() · tool()</text>
+
+  <!-- Reihe E: Tool-Handler -->
+  <rect x="720" y="1010" width="960" height="90" rx="14" class="logic-node"/>
+  <text x="1200" y="1050" text-anchor="middle" class="node">Tool-Handler</text>
+  <text x="1200" y="1076" text-anchor="middle" class="node-sub">(lib/tools)</text>
+
+  <!-- Reihe F: Shop-Modul -->
+  <rect x="60" y="1170" width="1620" height="90" rx="14" class="data-node"/>
+  <text x="870" y="1210" text-anchor="middle" class="node">Shop-Modul</text>
+  <text x="870" y="1236" text-anchor="middle" class="node-sub">(lib/shop.server.ts)</text>
+
+  <!-- Reihe G: Daten -->
+  <rect x="60" y="1330" width="630" height="90" rx="14" class="data-node"/>
+  <text x="375" y="1382" text-anchor="middle" class="node">Mock- oder Live-Katalog</text>
+
+  <rect x="720" y="1330" width="960" height="90" rx="14" class="data-node"/>
+  <text x="1200" y="1382" text-anchor="middle" class="node">Warenkörbe und Bestellungen im Prozessspeicher</text>
+
+  <!-- Pfeile innerhalb des Servers -->
+  <path d="M 870 780 V 850" class="line"/>
+  <path d="M 720 895 H 660" class="line-llm"/>
+  <path d="M 870 940 V 1010" class="line"/>
+  <text x="882" y="980" class="edge-label">execute()</text>
+  <path d="M 1380 780 V 1010" class="line"/>
+  <path d="M 210 780 V 1170" class="line"/>
+  <path d="M 1200 1100 V 1170" class="line"/>
+  <path d="M 375 1260 V 1330" class="line"/>
+  <path d="M 1200 1260 V 1330" class="line"/>
+
+  <!-- AI SDK abstrahiert den Chat-Pfad über die Grenze hinweg -->
+  <rect x="706" y="256" width="328" height="700" rx="16" class="sdk-group"/>
+  <text x="720" y="280" class="sdk-label">AI SDK</text>
+
+  <!-- Legende -->
+  <rect x="40" y="1460" width="1820" height="90" rx="14" class="legend"/>
+  <text x="70" y="1496" class="label">Pfeile zeigen Aufrufwege, Rückgaben sind weggelassen. <tspan style="font-weight:700;fill:#dc2626">Rote Linie:</tspan> Grenze zwischen Client und Server, jeder Pfeil darüber ist ein HTTP-Aufruf.</text>
+  <text x="70" y="1526" class="label"><tspan style="font-weight:700;fill:#c47c36">Gelb</tspan> hinterlegte Boxen: hier entscheidet ein Sprachmodell, welches Tool mit welchen Argumenten aufgerufen wird. <tspan style="font-weight:700;fill:#7c3aed">Violett</tspan> umrahmt: vom AI SDK abstrahierter Chat-Pfad.</text>
+</svg>
